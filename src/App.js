@@ -1,21 +1,46 @@
-import "./App.css";
-import "./main.css";
-import "./components/Molecules/form/form.css"
-import "./components/Molecules/loader/spinner.css"
-import "./components/Sections/section.css"
-import Panel from "./components/Panel";
-
-const fakeData = { type: "notes-panel", text: "Добавить", name: "notes" };
+import './App.css';
+import Form from './components/Form/Form';
+import Cards from './components/Cards/Cards';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import Header from './components/Header/Header';
 
 function App() {
+
+  const [cards, setCards] = useState([]);
+
+  useEffect(
+    () => {
+      axios.get('http://localhost:7070/notes')
+        .then(responce => {
+          setCards(responce.data);
+        })
+    }, []);
+
+  const handleSubmit = (currentText) => {
+    axios.post('http://localhost:7070/notes', {
+      "id": 0,
+      "content": currentText
+    })
+  };
+
+  const onDeleteCard = (idDeletedCard) => {
+    axios.delete('http://localhost:7070/notes/' + idDeletedCard);
+    updateCards();
+  }
+
+  const updateCards = () => {
+    axios.get('http://localhost:7070/notes')
+        .then(responce => {
+          setCards(responce.data);
+        })
+  }
+
   return (
     <div className="App">
-      <header className="header">
-        <h2 className="header-title">CRUD</h2>
-      </header>
-      <main>
-        <Panel {...fakeData}></Panel>
-      </main>
+      <Header updateCards = {updateCards}/>
+      <Cards cards={cards} onDeleteCard={onDeleteCard} />
+      <Form handleSubmit={handleSubmit} />
     </div>
   );
 }
